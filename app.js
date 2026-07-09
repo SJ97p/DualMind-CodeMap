@@ -460,25 +460,23 @@ const classes = {
   },
 };
 
+const graphTargets = {
+  overview: ["stage-sequence", "brain-maze", "personality-switching", "pulse-scan", "audio-narration", "interaction", "multi-ending"],
+  "stage-sequence": ["StageManager", "Stage", "Stage1", "PostProcessingControl", "GameManager", "SoundManager"],
+  "brain-maze": ["MazeGenerator", "BrainNerve", "ShaderColorTransition", "Stage1"],
+  "personality-switching": ["InputSystem", "PersonalityManager", "PlayerController", "InteractionManager", "PostProcessingControl"],
+  "pulse-scan": ["PulseWave", "PulseVisualizer", "IPulseReactive", "BrainNerve", "BridgePulseReceiver"],
+  "audio-narration": ["Stage", "SoundManager", "PoolManager", "PostProcessingControl"],
+  interaction: ["InteractionManager", "IPlayerInteractable", "Door", "BrainNerve"],
+  "multi-ending": ["GameManager", "Stage3", "BadEnding", "NormalEnding", "HappyEnding"],
+};
+
 const state = {
   selected: "overview",
   activeClass: null,
 };
 
-mermaid.initialize({
-  startOnLoad: false,
-  securityLevel: "loose",
-  theme: "base",
-  themeVariables: {
-    primaryColor: "#e8f1ff",
-    primaryTextColor: "#17202e",
-    primaryBorderColor: "#2166c2",
-    lineColor: "#667085",
-    secondaryColor: "#e8f7f4",
-    tertiaryColor: "#fff7ed",
-    fontFamily: "Segoe UI, Noto Sans KR, Arial",
-  },
-});
+let mermaidReady = false;
 
 window.selectNode = (id) => {
   if (nodes[id] || classes[id]) {
@@ -487,10 +485,50 @@ window.selectNode = (id) => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  initMermaid();
   buildTree();
+  document.addEventListener("click", handleDocumentClick);
   document.getElementById("reset-view").addEventListener("click", () => selectNode("overview"));
   selectNode("overview");
 });
+
+function initMermaid() {
+  if (!window.mermaid) {
+    mermaidReady = false;
+    return;
+  }
+
+  window.mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: "loose",
+    theme: "base",
+    themeVariables: {
+      primaryColor: "#e8f1ff",
+      primaryTextColor: "#17202e",
+      primaryBorderColor: "#2166c2",
+      lineColor: "#667085",
+      secondaryColor: "#e8f7f4",
+      tertiaryColor: "#fff7ed",
+      fontFamily: "Segoe UI, Noto Sans KR, Arial",
+    },
+  });
+  mermaidReady = true;
+}
+
+function handleDocumentClick(event) {
+  const treeButton = event.target.closest("[data-id]");
+  if (treeButton) {
+    event.preventDefault();
+    selectNode(treeButton.dataset.id);
+    return;
+  }
+
+  const fallbackNode = event.target.closest("[data-node]");
+  if (fallbackNode) {
+    event.preventDefault();
+    selectNode(fallbackNode.dataset.node);
+  }
+}
 
 function buildTree() {
   const tree = document.getElementById("tree");
@@ -542,7 +580,6 @@ function buildTree() {
       button.className = `tree-item ${classes[id] ? "child" : ""}`;
       button.dataset.id = id;
       button.textContent = item.title;
-      button.addEventListener("click", () => selectNode(id));
       wrap.appendChild(button);
     });
 
@@ -602,14 +639,67 @@ function renderClassList(classIds, activeId) {
 async function renderGraph(source) {
   const graph = document.getElementById("graph");
   graph.removeAttribute("data-processed");
+
+  if (!mermaidReady) {
+    renderFallbackGraph(graph);
+    return;
+  }
+
   graph.textContent = source;
   graph.className = "mermaid";
   try {
-    await mermaid.run({ nodes: [graph] });
+    await window.mermaid.run({ nodes: [graph] });
+    bindRenderedGraphClicks();
   } catch (error) {
-    graph.className = "";
-    graph.textContent = `Mermaid render failed:\n${error.message}`;
+    renderFallbackGraph(graph, `Mermaid render failed: ${error.message}`);
   }
+}
+
+function renderFallbackGraph(graph, message = "") {
+  const targets = graphTargets[state.selected] || [];
+  graph.className = "fallback-graph";
+  graph.innerHTML = "";
+
+  if (message) {
+    const note = document.createElement("div");
+    note.className = "fallback-node";
+    note.innerHTML = `<strong>Graph fallback</strong><span>${escapeHtml(message)}</span>`;
+    graph.appendChild(note);
+  }
+
+  targets.forEach((id) => {
+    const item = nodes[id] || classes[id];
+    if (!item) return;
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "fallback-node";
+    card.dataset.node = id;
+    card.innerHTML = `<strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.summary || item.kind || "")}</span>`;
+    graph.appendChild(card);
+  });
+}
+
+function bindRenderedGraphClicks() {
+  const targets = graphTargets[state.selected] || [];
+  const svg = document.querySelector("#graph svg");
+  if (!svg) return;
+
+  targets.forEach((id) => {
+    const item = nodes[id] || classes[id];
+    if (!item) return;
+    const firstWord = item.title.split(" ")[0];
+    const labels = Array.from(svg.querySelectorAll(".nodeLabel, .label, text, foreignObject"));
+    labels
+      .filter((label) => (label.textContent || "").trim().includes(firstWord))
+      .forEach((label) => {
+        const clickable = label.closest(".node") || label;
+        clickable.style.cursor = "pointer";
+        clickable.addEventListener("click", (event) => {
+          event.preventDefault();
+          selectNode(id);
+        });
+      });
+  });
 }
 
 function classGraph(id) {
@@ -667,4 +757,13 @@ function trimCode(text) {
   const lines = text.replace(/\r\n/g, "\n").split("\n");
   if (lines.length <= 140) return text;
   return `${lines.slice(0, 140).join("\n")}\n\n// ... ${lines.length - 140} more lines. Open file for full source.`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

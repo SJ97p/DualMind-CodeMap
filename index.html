@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>DualMind Code Map</title>
     <link rel="stylesheet" href="./style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   </head>
   <body>
     <header class="topbar">
@@ -40,7 +40,7 @@
         </div>
 
         <div class="graph-wrap">
-          <pre id="graph" class="mermaid"></pre>
+          <div id="graph" class="mermaid"></div>
         </div>
 
         <div class="hint-bar">
@@ -80,6 +80,6 @@
       </aside>
     </main>
 
-    <script src="./app.js"></script>
+    <script defer src="./app.js"></script>
   </body>
 </html>

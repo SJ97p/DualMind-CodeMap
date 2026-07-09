@@ -214,6 +214,41 @@ button {
   max-width: none;
 }
 
+.fallback-graph {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.fallback-node {
+  min-height: 84px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.05);
+  cursor: pointer;
+  text-align: left;
+}
+
+.fallback-node strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.fallback-node span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.fallback-node:hover {
+  border-color: var(--accent);
+  background: #f8fbff;
+}
+
 .hint-bar {
   padding: 12px 18px;
   border-top: 1px solid var(--line);
