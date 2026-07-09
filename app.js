@@ -460,6 +460,217 @@ const classes = {
   },
 };
 
+const classDiagramData = {
+  Stage: {
+    fields: ["-Puzzle[] puzzles", "#GameObject[] players", "#StageManager stageManager", "#SoundManager soundManager", "+int Count", "#bool _isTrigger"],
+    methods: ["+StartStage()", "#SequenceRoutine() IEnumerator", "#WaitForTrigger() IEnumerator", "+Trigger()", "#DoNarration(AudioClip) IEnumerator", "+SetEyes(bool) IEnumerator", "+SetPlayerSwitchable(bool)", "+SetPlayerScanable(bool)", "+SetPlayerPosition(GameObject, Transform)"],
+    relations: [
+      { to: "Stage1", type: "<|--", label: "inherits" },
+      { to: "Stage3", type: "<|--", label: "inherits" },
+      { to: "BadEnding", type: "<|--", label: "inherits" },
+      { to: "NormalEnding", type: "<|--", label: "inherits" },
+      { to: "HappyEnding", type: "<|--", label: "inherits" },
+      { to: "StageManager", type: "-->", label: "uses" },
+      { to: "SoundManager", type: "-->", label: "plays audio" },
+      { to: "InputSystem", type: "-->", label: "input gates" },
+      { to: "PostProcessingControl", type: "-->", label: "fade" },
+    ],
+  },
+  Stage1: {
+    fields: ["-MazeGenerator m_Generator", "-PulseLever pulseLever", "-GameObject positionOfPulsePuzzle", "-float timer", "-bool isTimerOn", "-bool timerSwitch"],
+    methods: ["#SequenceRoutine() IEnumerator", "-maze() IEnumerator", "-StartBrainConnect() IEnumerator", "-StartPulseLever() IEnumerator", "+SetMazeTimer()", "-MazeTimerCoroutine() IEnumerator", "+Trigger()"],
+    relations: [
+      { to: "Stage", type: "-->", label: "extends" },
+      { to: "MazeGenerator", type: "-->", label: "creates maze" },
+      { to: "BrainNerve", type: "-->", label: "goal trigger" },
+      { to: "InteractionManager", type: "-->", label: "locks interact" },
+      { to: "GameManager", type: "-->", label: "quest complete" },
+    ],
+  },
+  StageManager: {
+    fields: ["-Stage currentStage", "+static event OnSetDoor"],
+    methods: ["-OnSceneLoaded(Scene, LoadSceneMode)", "-Update()", "+ActivateStageTrigger()", "+SetDoor(int, bool)", "+GetCurrentStage() Stage"],
+    relations: [
+      { to: "Stage", type: "-->", label: "starts/ticks" },
+      { to: "Door", type: "-->", label: "OnSetDoor" },
+    ],
+  },
+  GameManager: {
+    fields: ["-int questCompletionRate", "+StageID currentStageID"],
+    methods: ["+LoadNextStage()", "+LoadStage(StageID)", "-OnSceneLoaded(Scene, LoadSceneMode)", "+QuestComplete()", "+GetQuestCompletionRate() int"],
+    relations: [
+      { to: "StageManager", type: "-->", label: "scene stage" },
+      { to: "Stage3", type: "-->", label: "ending data" },
+    ],
+  },
+  MazeGenerator: {
+    fields: ["-int width", "-int height", "-float extraPathChance", "-GameObject wallPrefab", "-GameObject floorPrefab", "-GameObject player", "-GameObject nervePrefab", "+GameObject goalNerve", "+Transform startPoint", "+Transform goalPoint"],
+    methods: ["+CreateMaze(ColorType)", "+GenerateMaze()", "+ClearMaze()", "-GetUnvisitedNeighbors(Vector2Int) List", "-RemoveWall(Vector2Int, Vector2Int)", "-BuildMaze()", "-SetStartAndGoal()", "+SetPlayerAndNerve(ColorType)", "-FindFarthestReachableCell(Vector2Int) Vector2Int", "-CreateExtraPaths()"],
+    relations: [
+      { to: "Stage1", type: "<--", label: "called by" },
+      { to: "BrainNerve", type: "-->", label: "places goal" },
+      { to: "ShaderColorTransition", type: "-->", label: "sets color" },
+    ],
+  },
+  BrainNerve: {
+    fields: ["-bool isOn", "-ShaderColorTransition sct"],
+    methods: ["+GetPrompt() string", "+Interact()", "+Highlight(bool)", "-SetVisuable(bool) IEnumerator", "+OnPulseHit(Collider, float, float)", "-ReactPulse() IEnumerator"],
+    relations: [
+      { to: "IPlayerInteractable", type: "..|>", label: "implements" },
+      { to: "IPulseReactive", type: "..|>", label: "implements" },
+      { to: "ShaderColorTransition", type: "-->", label: "color swap" },
+      { to: "GameManager", type: "-->", label: "QuestComplete" },
+    ],
+  },
+  ShaderColorTransition: {
+    fields: ["+ColorType targetType", "+float duration", "+Material[] materials", "-MeshRenderer _renderer", "-Dictionary colorMap"],
+    methods: ["+ChangeColor()", "+ChangeColorByType(ColorType)", "+SwapMaterial(ColorType) IEnumerator"],
+    relations: [
+      { to: "BrainNerve", type: "<--", label: "used by" },
+      { to: "MazeGenerator", type: "<--", label: "configured by" },
+    ],
+  },
+  PersonalityManager: {
+    fields: ["+string player1Tag", "+string player2Tag", "-float transitionDuration", "-int _currentPlayerIndex", "+static Action OnPlayerSwitched", "+static Action OnPlayerActivated", "-List<Player> players"],
+    methods: ["-TrySwitch()", "-FindPersonalities()", "-AddPlayerToList(GameObject)", "-SwitchPersonality()", "+SwitchToPlayer(int) IEnumerator", "-SetPlayerActivate(Player, bool)", "+IsCurrentPlayer(PlayerController) bool", "+IsMainPersonality() bool", "+SetCamerasOn()", "+SetPlayerOff()"],
+    relations: [
+      { to: "InputSystem", type: "-->", label: "OnSwitchPressed" },
+      { to: "PlayerController", type: "-->", label: "activates" },
+      { to: "InteractionManager", type: "-->", label: "SetCam" },
+      { to: "PostProcessingControl", type: "-->", label: "fade" },
+    ],
+  },
+  PlayerController: {
+    fields: ["-Transform cameraTransform", "-InputSystem _input", "-Animator _anim", "-float _moveSpeed", "-float _turnSpeed", "-bool isMovementEnabled", "-PersonalityManager _personalityManager"],
+    methods: ["-InitializeInstance()", "-SetEnabled(bool, float)", "-SetMovementEnabled(bool, float) IEnumerator", "-OnActivated(PlayerController, bool)", "-HandleLook()", "-HandleMovement()", "-HandleAnimation()"],
+    relations: [
+      { to: "PersonalityManager", type: "<-->", label: "activation event" },
+      { to: "InputSystem", type: "-->", label: "Move/Look" },
+    ],
+  },
+  InputSystem: {
+    fields: ["-KeyCode switchKey", "-KeyCode interactKey", "-KeyCode scanKey", "+static Action OnInteractPressed", "+static Action OnSwitchPressed", "+static Action OnScanPressed", "+bool CanInput", "+bool CanSwitch", "+bool CanScan", "+Vector2 Move", "+Vector2 Look"],
+    methods: ["#Awake()", "-Update()", "+SetCanInput(bool)", "+SetCanSwitch(bool)", "+SetCanScan(bool)"],
+    relations: [
+      { to: "PersonalityManager", type: "-->", label: "switch event" },
+      { to: "InteractionManager", type: "-->", label: "interact event" },
+      { to: "PulseWave", type: "-->", label: "scan event" },
+      { to: "Stage", type: "<--", label: "gated by" },
+    ],
+  },
+  InteractionManager: {
+    fields: ["-float _maxDistance", "-LayerMask _interactLayer", "-Camera _cam", "-GameObject _currentTarget", "-GameObject _previousTarget", "+bool canInteract"],
+    methods: ["-TryInteract()", "+SetCam(Camera)", "-UpdateInteractable()"],
+    relations: [
+      { to: "InputSystem", type: "<--", label: "OnInteractPressed" },
+      { to: "IPlayerInteractable", type: "-->", label: "calls Interact" },
+      { to: "PersonalityManager", type: "<--", label: "camera changes" },
+      { to: "Door", type: "-->", label: "target" },
+      { to: "BrainNerve", type: "-->", label: "target" },
+    ],
+  },
+  IPlayerInteractable: {
+    fields: [],
+    methods: ["+Interact()", "+Highlight(bool)", "+GetPrompt() string"],
+    relations: [
+      { to: "BrainNerve", type: "<|..", label: "implemented by" },
+      { to: "Door", type: "<|..", label: "implemented by" },
+      { to: "InteractionManager", type: "<--", label: "queried by" },
+    ],
+  },
+  PulseWave: {
+    fields: ["-float maxRadius", "-float expandSpeed", "-LayerMask targetLayer", "+Action<Collider> OnPulseHits", "-HashSet<int> activatedIds"],
+    methods: ["+EmitPulse()", "-ExpandPulse() IEnumerator"],
+    relations: [
+      { to: "InputSystem", type: "<--", label: "OnScanPressed" },
+      { to: "PulseVisualizer", type: "-->", label: "progress visual" },
+      { to: "IPulseReactive", type: "-->", label: "OnPulseHit" },
+      { to: "BrainNerve", type: "-->", label: "reactive target" },
+      { to: "BridgePulseReceiver", type: "-->", label: "reactive target" },
+    ],
+  },
+  PulseVisualizer: {
+    fields: ["-Transform pulseRing", "-bool isOn", "-Vector3 maxScale"],
+    methods: ["+EmitPulse()", "+OnPulseUpdate(float)", "+ResetVisual()", "+SetVisualize(float)"],
+    relations: [
+      { to: "PulseWave", type: "<--", label: "driven by" },
+    ],
+  },
+  IPulseReactive: {
+    fields: [],
+    methods: ["+OnPulseHit(Collider, float, float)"],
+    relations: [
+      { to: "BrainNerve", type: "<|..", label: "implemented by" },
+      { to: "BridgePulseReceiver", type: "<|..", label: "implemented by" },
+      { to: "PulseWave", type: "<--", label: "called by" },
+    ],
+  },
+  BridgePulseReceiver: {
+    fields: ["-GameObject[] bridges", "-bool isLeft", "-float time"],
+    methods: ["+OnPulseHit(Collider, float, float)"],
+    relations: [
+      { to: "IPulseReactive", type: "..|>", label: "implements" },
+      { to: "PulseWave", type: "<--", label: "pulse target" },
+    ],
+  },
+  PostProcessingControl: {
+    fields: ["-Volume volume", "-Bloom bloom", "-Vignette vignette", "-ColorAdjustments colorAdj", "-Coroutine currentCoroutine"],
+    methods: ["+TryFade(bool, float)", "-InitializeVolume()", "+SetScreenBlack()", "+SetBloomIntensity(float)", "+SetVignetteIntensity(float)", "+SetColorAdj(float)", "+FadeEffect(bool, float) IEnumerator", "+StopCurrentFade()"],
+    relations: [
+      { to: "Stage", type: "<--", label: "SetEyes" },
+      { to: "PersonalityManager", type: "<--", label: "switch fade" },
+    ],
+  },
+  SoundManager: {
+    fields: ["+SoundLibrary soundLibrary", "+AudioMixerSnapshot doctorSnapshot", "+AudioMixerSnapshot mentalSnapshot", "+AudioMixer audioMixer", "+AudioMixerGroup NarrationGroup", "+AudioMixerGroup bgmGroup", "+AudioMixerGroup sfxGroup"],
+    methods: ["+PlaySFX(AudioClip, float)", "+PlayBGM(AudioClip, float)", "+StopBGM()", "+PlayNarration(AudioClip, float)", "+SetBGMVolume(float)", "+SetSFXVolume(float)", "+SetDoctorVoice()", "+SetMentalVoice()"],
+    relations: [
+      { to: "Stage", type: "<--", label: "narration/BGM" },
+      { to: "PoolManager", type: "-->", label: "delegates playback" },
+    ],
+  },
+  PoolManager: {
+    fields: ["-int narrationCount", "-int bgmCount", "-int sfxCount", "+List<AudioSource> narrationPool", "+List<AudioSource> bgmPool", "+List<AudioSource> sfxPool"],
+    methods: ["#Awake()", "-InitializePool(string, int) List", "+PlaySFX(AudioClip, float, AudioMixerGroup)", "+PlayBGM(AudioClip, float, AudioMixerGroup)", "+StopBGM()", "+PlayNarration(AudioClip, float, AudioMixerGroup)"],
+    relations: [
+      { to: "SoundManager", type: "<--", label: "used by" },
+    ],
+  },
+  Stage3: {
+    fields: ["-CameraRectSystem rectSystem", "-Transform player1", "-Camera _cam", "-StageID resultStage"],
+    methods: ["#SequenceRoutine() IEnumerator", "-InitializePlayerPositionAndRotation()", "-StartFight(float) IEnumerator", "-SetResultStage()"],
+    relations: [
+      { to: "Stage", type: "-->", label: "extends" },
+      { to: "GameManager", type: "-->", label: "completion rate" },
+      { to: "PersonalityManager", type: "-->", label: "camera setup" },
+    ],
+  },
+  BadEnding: {
+    fields: [],
+    methods: ["#SequenceRoutine() IEnumerator"],
+    relations: [{ to: "Stage", type: "-->", label: "extends" }],
+  },
+  NormalEnding: {
+    fields: [],
+    methods: ["#SequenceRoutine() IEnumerator"],
+    relations: [{ to: "Stage", type: "-->", label: "extends" }],
+  },
+  HappyEnding: {
+    fields: [],
+    methods: ["#SequenceRoutine() IEnumerator"],
+    relations: [{ to: "Stage", type: "-->", label: "extends" }],
+  },
+  Door: {
+    fields: ["-int doorNum", "-Transform target", "+bool canOpen", "-float rotationSpeed", "-float rotationAmount", "-bool isOpen", "-Quaternion closedRot", "-Quaternion openRot", "-Coroutine doorCoroutine"],
+    methods: ["+GetPrompt() string", "-SetDoor(int, bool)", "+Interact()", "-ToggleDoor()", "-AnimateDoor()", "+Highlight(bool)", "-InitalizeRotation()", "-DoorMove() IEnumerator"],
+    relations: [
+      { to: "IPlayerInteractable", type: "..|>", label: "implements" },
+      { to: "StageManager", type: "<--", label: "OnSetDoor" },
+      { to: "InteractionManager", type: "<--", label: "interacted by" },
+    ],
+  },
+};
+
 const graphTargets = {
   overview: ["stage-sequence", "brain-maze", "personality-switching", "pulse-scan", "audio-narration", "interaction", "multi-ending"],
   "stage-sequence": ["StageManager", "Stage", "Stage1", "PostProcessingControl", "GameManager", "SoundManager"],
@@ -656,7 +867,7 @@ async function renderGraph(source) {
 }
 
 function renderFallbackGraph(graph, message = "") {
-  const targets = graphTargets[state.selected] || [];
+  const targets = getGraphTargets(state.selected);
   graph.className = "fallback-graph";
   graph.innerHTML = "";
 
@@ -680,7 +891,7 @@ function renderFallbackGraph(graph, message = "") {
 }
 
 function bindRenderedGraphClicks() {
-  const targets = graphTargets[state.selected] || [];
+  const targets = getGraphTargets(state.selected);
   const svg = document.querySelector("#graph svg");
   if (!svg) return;
 
@@ -704,15 +915,47 @@ function bindRenderedGraphClicks() {
 
 function classGraph(id) {
   const item = classes[id];
-  const title = item?.title || id;
-  return `classDiagram
-    class ${sanitizeMermaidId(title)} {
-      ${item?.summary ? "+role" : "+selected"}
-    }`;
+  const diagram = classDiagramData[id];
+  const classId = sanitizeMermaidId(id);
+  const lines = ["classDiagram"];
+  const members = [...(diagram?.fields || []), ...(diagram?.methods || [])];
+
+  lines.push(`  class ${classId} {`);
+  if (members.length) {
+    members.forEach((member) => lines.push(`    ${escapeMermaidMember(member)}`));
+  } else {
+    lines.push(`    +${escapeMermaidMember(item?.kind || "selected")}`);
+  }
+  lines.push("  }");
+
+  (diagram?.relations || []).forEach((relation) => {
+    const targetId = sanitizeMermaidId(relation.to);
+    const label = relation.label ? ` : ${relation.label}` : "";
+    lines.push(`  ${classId} ${relation.type} ${targetId}${label}`);
+  });
+
+  getGraphTargets(id).forEach((targetId) => {
+    if (classes[targetId] || nodes[targetId]) {
+      lines.push(`  click ${sanitizeMermaidId(targetId)} call selectNode("${targetId}")`);
+    }
+  });
+
+  return lines.join("\n");
 }
 
 function sanitizeMermaidId(value) {
   return String(value).replace(/[^a-zA-Z0-9_]/g, "_");
+}
+
+function escapeMermaidMember(value) {
+  return String(value).replace(/[{}<>]/g, "");
+}
+
+function getGraphTargets(id) {
+  if (graphTargets[id]) return graphTargets[id];
+  return [...new Set((classDiagramData[id]?.relations || []).map((relation) => relation.to))].filter(
+    (targetId) => classes[targetId] || nodes[targetId],
+  );
 }
 
 async function renderCode(item, id) {
