@@ -1,18 +1,27 @@
 ﻿# Documentation Index
 
-DualMind의 코드 구조를 빠르게 읽기 위한 문서 인덱스입니다.
+DualMind 코드 구조를 읽기 위한 문서 인덱스입니다.
 
 ## Recommended Reading Order
 
-1. [Architecture Overview](architecture.md)
-2. [Class Diagram](class-diagram.md)
-3. [Stage](classes/Stage.md)
-4. [MazeGenerator](classes/MazeGenerator.md)
-5. [PersonalityManager](classes/PersonalityManager.md)
-6. [PulseWave](classes/PulseWave.md)
-7. [InteractionManager](classes/InteractionManager.md)
+1. [README](../README.md)
+2. [Architecture Overview](architecture.md)
+3. [Class Diagram](class-diagram.md)
+4. [System Design Notes](#system-design-notes)
+5. [Class Detail Pages](#class-detail-pages)
+6. [Improvement Notes](improvements.md)
 
-## Core Class Pages
+## System Design Notes
+
+| System | Why It Matters |
+|---|---|
+| [Stage Sequence](systems/stage-sequence.md) | 내레이션 중심 진행, 입력 잠금, 화면 전환, 퍼즐 Trigger를 한 흐름으로 연결 |
+| [Brain Maze](systems/brain-maze.md) | DFS/BFS를 사용해 반복 가능한 미로와 충분한 목표 동선을 생성 |
+| [Personality Switching](systems/personality-switching.md) | 두 인격 전환 시 Player, Camera, AudioListener, Interaction 기준을 동기화 |
+| [Pulse Scan](systems/pulse-scan.md) | 스캔 탐지와 퍼즐 반응을 인터페이스로 분리 |
+| [Audio Narration](systems/audio-narration.md) | 내레이션 중심 게임에서 오디오 재생과 Stage 진행을 연결 |
+
+## Class Detail Pages
 
 | Class | Role | Code |
 |---|---|---|
