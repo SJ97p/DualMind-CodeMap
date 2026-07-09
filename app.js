@@ -480,7 +480,7 @@ let mermaidReady = false;
 
 window.selectNode = (id) => {
   if (nodes[id] || classes[id]) {
-    selectNode(id);
+    activateNode(id);
   }
 };
 
@@ -488,8 +488,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initMermaid();
   buildTree();
   document.addEventListener("click", handleDocumentClick);
-  document.getElementById("reset-view").addEventListener("click", () => selectNode("overview"));
-  selectNode("overview");
+  document.getElementById("reset-view").addEventListener("click", () => activateNode("overview"));
+  activateNode("overview");
 });
 
 function initMermaid() {
@@ -519,14 +519,14 @@ function handleDocumentClick(event) {
   const treeButton = event.target.closest("[data-id]");
   if (treeButton) {
     event.preventDefault();
-    selectNode(treeButton.dataset.id);
+    activateNode(treeButton.dataset.id);
     return;
   }
 
   const fallbackNode = event.target.closest("[data-node]");
   if (fallbackNode) {
     event.preventDefault();
-    selectNode(fallbackNode.dataset.node);
+    activateNode(fallbackNode.dataset.node);
   }
 }
 
@@ -587,7 +587,7 @@ function buildTree() {
   });
 }
 
-async function selectNode(id) {
+async function activateNode(id) {
   state.selected = id;
   const item = nodes[id] || classes[id];
   if (!item) return;
@@ -631,7 +631,7 @@ function renderClassList(classIds, activeId) {
     chip.type = "button";
     chip.className = `chip ${activeId === classId ? "active" : ""}`;
     chip.textContent = classId;
-    chip.addEventListener("click", () => selectNode(classId));
+    chip.addEventListener("click", () => activateNode(classId));
     list.appendChild(chip);
   });
 }
@@ -696,7 +696,7 @@ function bindRenderedGraphClicks() {
         clickable.style.cursor = "pointer";
         clickable.addEventListener("click", (event) => {
           event.preventDefault();
-          selectNode(id);
+          activateNode(id);
         });
       });
   });
