@@ -1,10 +1,10 @@
 ﻿# DualMind Code Map
 
-[![DualMind Portfolio Video](https://img.youtube.com/vi/uV3aHac0BLE/maxresdefault.jpg)](https://youtu.be/uV3aHac0BLE)
+[![DualMind Portfolio Video](https://img.youtube.com/vi/uV3aHac0BLE/hqdefault.jpg)](https://youtu.be/uV3aHac0BLE)
 
-## Demo
+## Portfolio Links
 
-- [Portfolio Video](https://youtu.be/uV3aHac0BLE)
+- [Watch Portfolio Video](https://youtu.be/uV3aHac0BLE)
 - [Interactive Code Map](https://sj97p.github.io/DualMind-CodeMap/)
 
 Unity 기반 1인칭 내러티브 퍼즐 게임 **DualMind**의 코드 구조를 설명하는 포트폴리오용 레포지토리입니다.
