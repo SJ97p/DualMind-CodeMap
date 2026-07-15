@@ -14,6 +14,7 @@
         <h1>DualMind Code Map</h1>
       </div>
       <nav class="top-actions" aria-label="external links">
+        <a href="https://youtu.be/uV3aHac0BLE" target="_blank" rel="noreferrer">Portfolio Video</a>
         <a href="https://github.com/sj97p/DualMind-CodeMap#readme" target="_blank" rel="noreferrer">README</a>
         <a href="https://github.com/sj97p/DualMind-CodeMap/blob/main/docs/architecture.md" target="_blank" rel="noreferrer">Docs</a>
         <a href="https://github.com/sj97p/DualMind-CodeMap/blob/main/docs/class-diagram.md" target="_blank" rel="noreferrer">Class Diagram</a>
@@ -21,7 +22,7 @@
       </nav>
     </header>
 
-    <main class="app-shell">
+    <main class="app-shell" id="app-shell">
       <aside class="sidebar" aria-label="system tree">
         <div class="sidebar-head">
           <span class="label">Explorer</span>
@@ -30,13 +31,16 @@
         <div id="tree" class="tree"></div>
       </aside>
 
-      <section class="canvas-panel">
+      <section class="canvas-panel" aria-label="UML and system map">
         <div class="panel-head">
           <div>
-            <span id="scope-label" class="label">System Overview</span>
+            <span id="scope-label" class="label">Overview</span>
             <h2 id="graph-title">전체 시스템 구조</h2>
           </div>
-          <div id="breadcrumbs" class="breadcrumbs"></div>
+          <div class="graph-nav">
+            <button id="graph-back" type="button" disabled>뒤로</button>
+            <div id="breadcrumbs" class="breadcrumbs"></div>
+          </div>
         </div>
 
         <div class="graph-wrap">
@@ -44,9 +48,11 @@
         </div>
 
         <div class="hint-bar">
-          <span>노드를 클릭하면 하위 구조와 코드가 오른쪽 패널에 표시됩니다.</span>
+          <span>UML 노드와 함수명을 클릭하면 설계 의도, 코드 근거, 함수 위치를 함께 확인할 수 있습니다.</span>
         </div>
       </section>
+
+      <div class="splitter" data-resizer="graph-detail" role="separator" aria-orientation="vertical" title="그래프와 설명 영역 폭 조절"></div>
 
       <aside class="detail-panel" aria-label="selected node detail">
         <div class="detail-head">
@@ -56,29 +62,58 @@
         </div>
 
         <section class="detail-section">
-          <h3>Problem</h3>
+          <h3>설계 의도</h3>
           <p id="detail-problem"></p>
         </section>
 
         <section class="detail-section">
-          <h3>Solution</h3>
+          <h3>진행 중 고민 / 초기 구조의 한계</h3>
           <p id="detail-solution"></p>
+        </section>
+
+        <section class="detail-section">
+          <h3>최종 구조</h3>
+          <p id="detail-final"></p>
+        </section>
+
+        <section class="detail-section">
+          <h3>Evidence</h3>
+          <div id="evidence-list" class="evidence-list"></div>
+        </section>
+
+        <section class="detail-section">
+          <h3>아쉬운 점과 다음 개선</h3>
+          <p id="detail-next"></p>
         </section>
 
         <section class="detail-section">
           <h3>Key Classes</h3>
           <div id="class-list" class="chip-list"></div>
         </section>
+      </aside>
 
-        <section class="detail-section code-section">
-          <div class="code-head">
-            <h3>Code Preview</h3>
-            <a id="code-link" href="#" target="_blank" rel="noreferrer">Open file</a>
+      <div class="splitter" data-resizer="detail-code" role="separator" aria-orientation="vertical" title="설명과 코드 영역 폭 조절"></div>
+
+      <aside class="code-panel" aria-label="selected source code preview">
+        <div class="code-head">
+          <div>
+            <span class="label">Source</span>
+            <h2>Code Preview</h2>
           </div>
-          <pre><code id="code-preview">시스템이나 클래스를 선택하면 관련 코드가 표시됩니다.</code></pre>
-        </section>
+          <a id="code-link" href="#" target="_blank" rel="noreferrer">Open file</a>
+        </div>
+        <div id="code-methods" class="code-methods" aria-label="method shortcuts"></div>
+        <pre><code id="code-preview">시스템이나 클래스를 선택하면 관련 코드가 표시됩니다.</code></pre>
       </aside>
     </main>
+
+    <div id="media-modal" class="media-modal" aria-hidden="true">
+      <button id="modal-close" class="modal-close" type="button" aria-label="close preview">×</button>
+      <figure class="modal-body">
+        <img id="modal-image" alt="" />
+        <figcaption id="modal-caption"></figcaption>
+      </figure>
+    </div>
 
     <script defer src="./app.js"></script>
   </body>
