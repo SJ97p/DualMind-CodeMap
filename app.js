@@ -35,13 +35,13 @@ const nodes = {
       "Stage Sequence를 중심 흐름으로 두고, Maze, Personality, Pulse, Audio 시스템을 독립 모듈로 나눠 연결했습니다.",
     classes: ["Stage", "StageManager", "MazeGenerator", "PersonalityManager", "PulseWave"],
     graph: `flowchart TD
-      stage["Stage Sequence"]
-      maze["Brain Maze"]
-      personality["Personality Switching"]
-      pulse["Pulse Scan"]
-      audio["Audio / Narration"]
-      interaction["Interaction"]
-      ending["Multi Ending"]
+      stage["스테이지 진행"]
+      maze["두뇌 미로"]
+      personality["인격 전환"]
+      pulse["펄스 스캔"]
+      audio["오디오 / 나레이션"]
+      interaction["상호작용"]
+      ending["멀티 엔딩"]
 
       stage --> maze
       stage --> personality
@@ -61,7 +61,7 @@ const nodes = {
   },
   "stage-sequence": {
     kind: "System",
-    title: "Stage Sequence System",
+    title: "스테이지 진행 시스템",
     summary:
       "내레이션, 화면 암전/개안, 입력 잠금, 퍼즐 Trigger, 씬 전환을 코루틴 순서로 제어하는 진행 시스템입니다.",
     problem:
@@ -96,7 +96,7 @@ const nodes = {
   },
   "brain-maze": {
     kind: "System",
-    title: "Brain Maze System",
+    title: "두뇌 미로 생성 시스템",
     summary:
       "감정 테마별 미로를 생성하고, 시작점에서 가장 먼 목표를 배치하는 절차적 퍼즐 시스템입니다.",
     problem:
@@ -129,7 +129,7 @@ const nodes = {
   },
   "personality-switching": {
     kind: "System",
-    title: "Personality Switching System",
+    title: "인격 전환 시스템",
     summary:
       "두 인격 전환 시 PlayerController, Camera, AudioListener, Interaction 기준을 함께 바꾸는 시스템입니다.",
     problem:
@@ -162,7 +162,7 @@ const nodes = {
   },
   "pulse-scan": {
     kind: "System",
-    title: "Pulse Scan System",
+    title: "펄스 스캔 시스템",
     summary:
       "스캔 입력을 받아 구형 범위를 확장하고, 감지된 퍼즐 오브젝트가 인터페이스로 반응하게 만드는 시스템입니다.",
     problem:
@@ -196,7 +196,7 @@ const nodes = {
   },
   "audio-narration": {
     kind: "System",
-    title: "Audio / Narration Flow",
+    title: "오디오·나레이션 흐름",
     summary:
       "내레이션 중심 진행을 Stage 시퀀스와 연결하고, BGM/SFX/Narration 재생을 분리한 오디오 흐름입니다.",
     problem:
@@ -224,7 +224,7 @@ const nodes = {
   },
   interaction: {
     kind: "System",
-    title: "Interaction System",
+    title: "상호작용 시스템",
     summary:
       "현재 카메라 기준 화면 중앙 Raycast로 상호작용 대상을 찾고, IPlayerInteractable 구현체를 호출합니다.",
     problem:
@@ -247,7 +247,7 @@ const nodes = {
   },
   "multi-ending": {
     kind: "System",
-    title: "Multi Ending Flow",
+    title: "멀티 엔딩 분기",
     summary:
       "퀘스트 완료 수를 기준으로 Stage3 이후 Bad, Normal, Happy Ending으로 분기합니다.",
     problem:
@@ -888,7 +888,7 @@ function buildTree() {
 
   const groups = [
     {
-      title: "Systems",
+      title: "핵심 시스템",
       ids: [
         "overview",
         "stage-sequence",
@@ -901,7 +901,7 @@ function buildTree() {
       ],
     },
     {
-      title: "Core Classes",
+      title: "핵심 클래스",
       ids: [
         "Stage",
         "Stage1",
