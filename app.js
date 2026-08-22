@@ -67,7 +67,7 @@ const nodes = {
     problem:
       "내레이션 종료, 입력 허용, 화면 페이드, 퍼즐 완료 대기가 흩어지면 스토리 진행 순서가 꼬일 수 있었습니다.",
     solution:
-      "Stage 추상 클래스에 공통 기능을 두고, 각 스테이지가 SequenceRoutine 코루틴으로 자신의 진행 순서를 작성하게 했습니다.",
+      "공통 진행은 Stage 추상 클래스에 두고, 각 스테이지가 가상 SequenceRoutine 코루틴과 고유 함수로 자신의 진행을 구현하게 했습니다. 당시에는 공통 흐름을 빠르게 유지하면서 스테이지별 차이를 담기 위한 선택이었습니다.",
     doc: "docs/systems/stage-sequence.md",
     classes: ["Stage", "Stage1", "StageManager", "GameManager", "PostProcessingControl", "SoundManager"],
     graph: `flowchart TD
@@ -288,7 +288,7 @@ const portfolioCopy = {
     final:
       "Stage가 순차 진행을 담당하고, MazeGenerator, PersonalityManager, PulseWave, SoundManager가 각각의 기능을 모듈로 수행합니다. 전체 구조는 시스템 노드에서 시작해 하위 클래스와 실제 코드로 내려가며 탐색할 수 있게 구성했습니다.",
     next:
-      "초기 개인 프로젝트라 일부 시스템은 Stage에 절차가 집중되어 있습니다. 이후에는 기믹 단위 시퀀스 컴포넌트와 ScriptableObject 기반 데이터 흐름으로 더 분리할 수 있습니다.",
+      "초기 개인 프로젝트라 일부 시스템은 Stage에 절차가 집중되어 있습니다. 공통 흐름을 상속으로 묶은 덕분에 진행을 통제할 수 있었지만, 독립 시스템을 붙일 때 불편해진 한계도 있었습니다. 이후에는 기믹 단위 시퀀스 컴포넌트와 ScriptableObject 기반 데이터 흐름으로 더 분리할 수 있습니다.",
     evidence: [evidence.stageSequence, evidence.brainMaze, evidence.pulseScan, evidence.personalitySwitching],
   },
   "stage-sequence": {
@@ -297,7 +297,7 @@ const portfolioCopy = {
     problem:
       "처음에는 스테이지 진행을 비동기식으로 처리하려 했지만, 나레이션이 끝난 뒤 문을 열거나 퍼즐을 활성화하는 순차 처리가 필요했습니다. 나레이션 중 플레이어가 움직이거나 상호작용하면 몰입감과 상태 일관성이 깨질 수 있어, 진행 순서를 책임지는 객체가 필요하다고 판단했습니다.",
     solution:
-      "공통 기능은 Stage 추상 클래스에 두고, 각 스테이지별 차이는 SequenceRoutine에서 구현했습니다. WaitForTrigger, DoNarration, SetEyes, 입력 제한을 한 흐름 안에 묶어 나레이션-대기-퍼즐-다음 진행이 끊기지 않게 구성했습니다.",
+      "공통 기능은 Stage 추상 클래스에 두고, 각 스테이지별 차이는 가상 SequenceRoutine과 고유 함수에서 구현했습니다. WaitForTrigger, DoNarration, SetEyes, 입력 제한을 한 흐름 안에 묶어 나레이션-대기-퍼즐-다음 진행이 끊기지 않게 구성했습니다.",
     final:
       "StageManager가 씬 로드 후 현재 Stage를 찾고 StartStage를 호출합니다. Stage는 SequenceRoutine 코루틴에서 나레이션, 화면 페이드, 입력 가능 상태, Trigger 대기를 순서대로 실행하며, GameManager와 연결되어 다음 Stage나 엔딩 흐름으로 넘어갑니다.",
     next:
