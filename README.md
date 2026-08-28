@@ -1,17 +1,10 @@
 # DualMind Code Map
 
-[![DualMind Portfolio Video](https://img.youtube.com/vi/uV3aHac0BLE/hqdefault.jpg)](https://youtu.be/uV3aHac0BLE)
-
-> 이미지를 클릭하면 DualMind 포트폴리오 영상으로 이동합니다.
-
 ## 바로가기
 
+[![포트폴리오 영상 바로가기](assets/navigation/portfolio-video-link.svg)](https://youtu.be/uV3aHac0BLE)
+
 [![인터랙티브 코드맵](assets/navigation/code-map-link.svg)](https://sj97p.github.io/DualMind-CodeMap/)
-
-> 이미지를 클릭하면 DualMind의 시스템 구조와 기술 문서로 이동합니다.
-## Project Links
-
-- [Interactive Code Map](https://sj97p.github.io/DualMind-CodeMap/)
 
 Unity 기반 1인칭 내러티브 퍼즐 게임 **DualMind**의 코드 구조를 설명하는 포트폴리오용 레포지토리입니다.
 
@@ -81,5 +74,3 @@ DualMind에서 가장 중요하게 본 것은 “퍼즐 기능을 많이 만드�
 ## Diagram Note
 
 GitHub의 Mermaid 렌더러는 환경에 따라 `click` 링크가 제한될 수 있습니다. 그래서 각 다이어그램 아래에 동일한 클래스 링크 목록을 함께 제공합니다.
-
-
