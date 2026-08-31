@@ -1,19 +1,19 @@
 ﻿# Documentation Index
 
-DualMind 코드 구조를 읽기 위한 문서 인덱스입니다.
+DualMind는 “두 인격이 단서를 찾고 해결하는 퍼즐 경험”에서 출발한 프로젝트입니다. 먼저 게임의 흐름을 보고, 그 흐름을 만든 시스템과 한계를 차례로 확인할 수 있게 구성했습니다.
 
 ## Recommended Reading Order
 
-1. [README](../README.md)
-2. [Architecture Overview](architecture.md)
-3. [Class Diagram](class-diagram.md)
-4. [System Design Notes](#system-design-notes)
-5. [Class Detail Pages](#class-detail-pages)
-6. [Improvement Notes](improvements.md)
+1. [README](../README.md) — 게임의 의도, 실제 플레이 흐름, 구현 범위
+2. [Stage Sequence](systems/stage-sequence.md) — 스토리 진행을 `Stage`와 코루틴으로 묶은 방식
+3. [Personality Switching](systems/personality-switching.md) / [Pulse Scan](systems/pulse-scan.md) — 인격 전환과 단서 탐색이 퍼즐로 연결되는 방식
+4. [Brain Maze](systems/brain-maze.md) — 첫 스테이지의 미로 생성과 목표 배치
+5. [Improvement Notes](improvements.md) — 당시 선택의 한계와 다음 설계
+6. [Architecture Overview](architecture.md) / [Class Diagram](class-diagram.md) — 전체 관계와 클래스 상세
 
 ## System Design Notes
 
-| System | Why It Matters |
+| 시스템 | 이 문서에서 볼 내용 |
 |---|---|
 | [Stage Sequence](systems/stage-sequence.md) | 내레이션 중심 진행, 입력 잠금, 화면 전환, 퍼즐 Trigger를 한 흐름으로 연결 |
 | [Brain Maze](systems/brain-maze.md) | DFS/BFS를 사용해 반복 가능한 미로와 충분한 목표 동선을 생성 |
