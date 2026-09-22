@@ -1,43 +1,32 @@
-﻿# Audio Narration Flow
+# 인격 전환 나레이션 음성 연출
 
-Related classes: [SoundManager](../classes/SoundManager.md), [PoolManager](../classes/PoolManager.md), [Stage](../classes/Stage.md), [PostProcessingControl](../classes/PostProcessingControl.md)
+관련 클래스: [Stage](../classes/Stage.md), [SoundManager](../classes/SoundManager.md), [PoolManager](../classes/PoolManager.md), [PostProcessingControl](../classes/PostProcessingControl.md)
 
-## Problem
+## 상황
 
-DualMind는 내레이션이 플레이 진행을 이끄는 구조입니다. 내레이션 재생과 Stage 진행이 따로 움직이면, 플레이어가 듣는 정보와 실제 입력 가능 상태가 어긋날 수 있습니다.
+DualMind의 주인격과 보조 인격은 같은 공간을 다른 방식으로 해석합니다. 화면 효과와 텍스트만으로 전환을 표현하면, 플레이어가 보조 인격의 개입을 기능 변화로만 받아들일 수 있다고 봤습니다. 심상세계에서 내면의 목소리가 말을 거는 느낌을 나레이션으로 먼저 전달하고 싶었습니다.
 
-## What I Wanted
+## 판단
 
-- Stage 시퀀스에서 내레이션 재생과 대기 시간을 직접 제어하고 싶었습니다.
-- BGM, SFX, Narration 재생 진입점을 분리하고 싶었습니다.
-- 반복 재생되는 오디오를 관리하기 쉽게 AudioSource 풀을 사용하고 싶었습니다.
+주인격은 밝은 톤, 보조 인격은 낮고 분노가 섞인 톤으로 구분했습니다. 보조 인격의 음성에는 에코를 더해 같은 공간의 일반적인 대화보다 내면에서 울리는 목소리에 가깝게 들리도록 했습니다.
 
-## Solution
+## 제작과 적용
 
-`Stage`는 `SoundManager.PlayNarration()`을 호출하고, AudioClip 길이만큼 대기합니다. `SoundManager`는 재생 요청의 진입점 역할을 하고, `PoolManager`가 실제 AudioSource를 재사용합니다.
+음성은 ComfyUI의 Qwen3-TTS로 제작했습니다. 이 과정은 Unity 코드와 별도의 콘텐츠 제작 단계입니다. Unity 쪽에서는 `Stage.DoNarration()`이 장면 순서에 맞춰 `SoundManager.PlayNarration()`을 호출하고, `SoundManager`가 Narration Mixer Group과 AudioMixer Snapshot 전환을 제공합니다. 실제 재생은 `PoolManager`의 AudioSource 풀을 사용합니다.
 
 ```mermaid
 flowchart LR
-    Stage --> DoNarration
-    DoNarration --> SoundManager
-    SoundManager --> PoolManager
-    PoolManager --> AudioSourcePool
-    SoundManager --> AudioMixer
+    Voice[Qwen3-TTS 음성 제작] --> Clip[인격별 AudioClip]
+    Clip --> Stage[Stage.DoNarration]
+    Stage --> SoundManager
+    SoundManager --> Mixer[AudioMixer Snapshot]
+    SoundManager --> Pool[AudioSource Pool]
 ```
 
-## Implementation
+## 결과
 
-- `Stage.DoNarration()`은 Clip을 재생하고 `clip.length` 기반으로 대기합니다.
-- `SoundManager`는 BGM/SFX/Narration을 구분해 `PoolManager`로 전달합니다.
-- `PoolManager`는 용도별 AudioSource 풀을 만들고, 사용 가능한 Source를 찾아 재생합니다.
-- `SoundManager.SetDoctorVoice()`와 `SetMentalVoice()`는 AudioMixer Snapshot 전환을 담당합니다.
+인격 전환 뒤 보조 인격이 정보를 전달할 때, 목소리의 톤과 잔향이 먼저 분위기를 바꾸도록 했습니다. 플레이어가 내면의 목소리와 함께 퍼즐을 진행하는 느낌을 받도록 구성했고, 나레이션이 끝난 뒤에는 다음 퍼즐·입력 단계가 이어집니다.
 
-## Result
+## 자체 피드백
 
-내레이션 중심 진행에서 오디오 재생과 Stage 시퀀스를 직접 연결할 수 있었고, BGM/SFX/Narration 재생 책임도 분리할 수 있었습니다.
-
-## What I Would Improve
-
-- 내레이션 대기 방식은 `clip.length`에 의존하므로, 스킵/중단/자막과 연결하려면 별도 NarrationController가 필요합니다.
-- SoundLibrary의 Clip 필드는 많아질수록 관리가 어려워질 수 있어 Stage별 데이터 구조로 분리할 수 있습니다.
-- AudioSource 풀링은 현재 간단한 구조이므로, 재생 우선순위나 중복 재생 정책을 추가할 수 있습니다.
+현재는 AudioClip 길이를 기준으로 진행을 대기합니다. 자막, 화면 효과, 음성 스킵을 함께 제어하려면 별도 나레이션 컨트롤러와 타임라인 기반 연출로 분리하는 편이 더 적절합니다.

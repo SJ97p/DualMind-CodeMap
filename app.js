@@ -21,6 +21,11 @@ const evidence = {
     caption:
       "인격 전환 시 화면 페이드를 통해 상태 전환을 숨기고, 카메라/입력/오디오 상태를 함께 갱신했습니다.",
   },
+  audioNarration: {
+    src: "assets/evidence/audio-narration-qwen3-tts.png",
+    caption:
+      "ComfyUI에서 Qwen3-TTS로 주인격과 보조 인격의 음색을 달리 만든 작업 화면입니다. 보조 인격에는 에코를 더해 심상세계의 내면 목소리처럼 들리게 구성했습니다.",
+  },
 };
 
 const nodes = {
@@ -196,13 +201,13 @@ const nodes = {
   },
   "audio-narration": {
     kind: "System",
-    title: "오디오·나레이션 흐름",
+    title: "인격 전환 나레이션 음성 연출",
     summary:
-      "내레이션 중심 진행을 Stage 시퀀스와 연결하고, BGM/SFX/Narration 재생을 분리한 오디오 흐름입니다.",
+      "두 인격이 같은 공간에 존재한다는 설정을 음색과 잔향 차이로 전달하고, 나레이션을 Stage 진행에 연결한 연출입니다.",
     problem:
-      "내레이션 재생과 Stage 진행이 따로 움직이면 플레이어가 듣는 정보와 실제 입력 가능 상태가 어긋납니다.",
+      "텍스트와 화면 전환만으로는 주인격과 보조 인격의 차이, 심상세계에서 내면의 목소리가 개입하는 느낌을 충분히 전달하기 어려웠습니다.",
     solution:
-      "Stage가 SoundManager.PlayNarration을 호출하고, PoolManager가 용도별 AudioSource 풀을 재사용하도록 구성했습니다.",
+      "ComfyUI의 Qwen3-TTS로 주인격은 밝은 톤, 보조 인격은 낮고 분노가 섞인 톤으로 제작했습니다. 보조 인격 음성에는 에코를 적용하고, Unity에서는 Stage와 SoundManager를 통해 장면 진행에 맞춰 재생했습니다.",
     doc: "docs/systems/audio-narration.md",
     classes: ["Stage", "SoundManager", "PoolManager", "PostProcessingControl"],
     graph: `flowchart LR
@@ -358,16 +363,16 @@ const portfolioCopy = {
   },
   "audio-narration": {
     summary:
-      "나레이션을 게임 진행의 트리거로 사용해 스토리 전달과 플레이 흐름을 연결한 오디오 시스템입니다.",
+      "인격마다 다른 음색과 잔향을 적용한 나레이션으로, 심상세계와 내면의 목소리를 플레이 흐름 안에 넣은 연출 사례입니다.",
     problem:
-      "나레이션이 끝난 뒤 플레이어 이동, 문 개방, 퍼즐 활성화가 이어져야 했고, 나레이션 중 입력이 가능하면 몰입감이 떨어질 수 있었습니다.",
+      "인격 전환을 단순한 기능 변화로 보이지 않게 하고, 플레이어가 보조 인격의 개입을 듣는 순간 심상세계의 분위기를 느끼게 할 필요가 있었습니다.",
     solution:
-      "Stage.DoNarration에서 SoundManager를 호출하고 클립 길이만큼 기다린 뒤 다음 단계로 넘어가게 했습니다. AudioSource는 PoolManager에서 재사용해 반복 생성 비용을 줄였습니다.",
+      "ComfyUI의 Qwen3-TTS에서 인격별 음색을 제작하고 보조 인격에 에코를 더했습니다. Unity에서는 Stage.DoNarration이 SoundManager로 클립을 전달하고, Mixer Snapshot 전환으로 나레이션 버스를 제어했습니다.",
     final:
-      "SoundManager는 BGM, SFX, Narration을 분리된 API와 MixerGroup으로 제공하고, PoolManager가 용도별 AudioSource 풀에서 실제 재생을 담당합니다.",
+      "주인격과 보조 인격이 말하는 순간의 분위기를 다르게 만들고, 나레이션이 끝난 뒤 퍼즐과 다음 진행이 이어지도록 구성했습니다. 음성 생성 작업은 별도 제작 단계이고, Unity 코드는 재생 시점과 오디오 버스를 담당합니다.",
     next:
-      "자막, Timeline, 나레이션 타입 데이터화가 있었다면 더 안정적으로 연출할 수 있었습니다. 기다려야 하는 나레이션과 배경처럼 재생되는 나레이션을 명확히 타입화할 여지가 있습니다.",
-    evidence: [evidence.stageSequence],
+      "자막과 화면 효과까지 같은 타임라인에서 제어하면 인격 전환 순간을 더 정교하게 맞출 수 있습니다. 현재 구조는 음성 클립 길이를 기준으로 대기하므로 스킵과 중단 처리도 별도로 다듬을 수 있습니다.",
+    evidence: [evidence.audioNarration],
   },
   "multi-ending": {
     summary:
@@ -813,6 +818,13 @@ const graphTargets = {
   "multi-ending": ["GameManager", "Stage3", "BadEnding", "NormalEnding", "HappyEnding"],
 };
 
+// README와 PPT에서 바로 열 수 있는 대표 사례입니다.
+const featuredCaseIds = new Set([
+  "personality-switching",
+  "brain-maze",
+  "audio-narration",
+]);
+
 const state = {
   selected: "overview",
   activeClass: null,
@@ -841,8 +853,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.key === "Escape") closeMediaModal();
   });
   initResizableLayout();
-  activateNode("overview");
+  openInitialView();
+  window.addEventListener("hashchange", openInitialView);
 });
+
+function openInitialView() {
+  const match = decodeURIComponent(window.location.hash.replace(/^#/, "")).match(/^case=(.+)$/);
+  const id = match?.[1];
+  activateNode(nodes[id] || classes[id] ? id : "overview", false);
+}
 
 function initMermaid() {
   if (!window.mermaid) {
@@ -888,14 +907,15 @@ function buildTree() {
 
   const groups = [
     {
-      title: "핵심 시스템",
+      title: "대표 사례",
+      ids: ["personality-switching", "brain-maze", "audio-narration"],
+    },
+    {
+      title: "전체 시스템",
       ids: [
         "overview",
         "stage-sequence",
-        "brain-maze",
-        "personality-switching",
         "pulse-scan",
-        "audio-narration",
         "interaction",
         "multi-ending",
       ],
@@ -946,6 +966,13 @@ async function activateNode(id, pushHistory = true) {
   state.selected = id;
   const baseItem = nodes[id] || classes[id];
   if (!baseItem) return;
+
+  if (pushHistory) {
+    const targetHash = featuredCaseIds.has(id) ? `#case=${encodeURIComponent(id)}` : "";
+    if (window.location.hash !== targetHash) {
+      history.replaceState(null, "", targetHash || window.location.pathname);
+    }
+  }
   const item = { ...baseItem, ...(portfolioCopy[id] || {}) };
 
   document.querySelectorAll("[data-id]").forEach((el) => {
